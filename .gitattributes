@@ -1,2 +1,9 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# .gitattributes
+
+# Exclude CSS files from web-app-files directory from language statistics
+web-app-files/*.css linguist-vendored
+
+# Indicate other file types for better syntax highlighting (optional)
+*.tf terraform
+*.py python
+

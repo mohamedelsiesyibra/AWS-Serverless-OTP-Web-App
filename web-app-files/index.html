@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Services</title>
+    <link href="output.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-to-r from-blue-300 to-blue-500 py-10 min-h-screen flex items-center">
+
+    <div class="container mx-auto p-4 max-w-lg shadow-xl rounded-xl bg-white">
+        <h1 class="text-center text-4xl font-semibold mb-10">Order Form</h1>
+        <form onsubmit="submitForm(event)" class="bg-white p-8 rounded shadow-md">
+            <fieldset class="mb-6">
+                <legend class="block text-sm font-medium text-gray-600 mb-2">Choose Services:</legend>
+                <div class="flex flex-col space-y-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="services" value="electrical"
+                            class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="ml-2 text-gray-700">Electrical</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="services" value="plumbing"
+                            class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="ml-2 text-gray-700">Plumbing</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="services" value="painting"
+                            class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="ml-2 text-gray-700">Painting</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="mb-6">
+                <label for="details" class="block text-sm font-medium text-gray-600">Details:</label>
+                <textarea name="details" id="details" rows="4" class="mt-1 p-2 w-full border rounded-md"
+                    placeholder="Explain your needs in detail..."></textarea>
+            </div>
+
+            <div class="mb-6">
+                <label for="name" class="block text-sm font-medium text-gray-600">Name:</label>
+                <input type="text" name="name" id="name" class="mt-1 p-2 w-full border rounded-md" required>
+            </div>
+
+            <div class="mb-6">
+                <label for="address" class="block text-sm font-medium text-gray-600">Address:</label>
+                <input type="text" name="address" id="address" class="mt-1 p-2 w-full border rounded-md" required>
+            </div>
+
+            <div class="mb-6">
+                <label for="phone" class="block text-sm font-medium text-gray-600">Phone Number:</label>
+                <input type="tel" name="phone" id="phone" class="mt-1 p-2 w-full border rounded-md" required>
+            </div>
+
+            <button type="submit"
+                class="w-full py-2 px-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-700">Confirm</button>
+        </form>
+
+        <!-- OTP -->
+        <div id="otpModal" class="fixed inset-0 flex items-center justify-center hidden z-50">
+            <div class="relative p-6 bg-white w-full max-w-md m-auto rounded-xl shadow-xl flex flex-col">
+                <button onclick="closeModal()" class="absolute top-0 right-0 p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+                <h2 class="text-2xl font-semibold mb-6">Enter your OTP</h2>
+                <input type="text" id="otpInput" class="border p-2 rounded-md mb-4 w-full" placeholder="Enter OTP" />
+                <button onclick="verifyOTP()" class="bg-blue-600 text-white p-2 rounded-md w-full mb-2">Verify
+                    OTP</button>
+                <div id="successMessage" class="mt-4 text-center text-green-600 hidden">
+                    <p>Your order has been successfully placed!</p>
+                </div>
+                <div id="otpErrorMessage" class="mt-4 text-center text-red-600 hidden">
+                    <p>Incorrect OTP. Please try again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation GIF -->
+    <div id="confirmationGif" class="fixed inset-0 flex items-center justify-center hidden z-60 bg-black bg-opacity-75">
+        <div class="relative">
+            <button onclick="closeGifBanner()"
+                class="absolute top-4 right-4 p-2 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img src="skill-issue.gif" alt="Confirmation GIF" class="w-full max-w-md mx-auto">
+        </div>
+    </div>
+
+
+    <script>
+        let apiUrls = {};  // Global variable to store the fetched URLs
+
+        async function fetchApiUrls() {
+            try {
+                // Use the relative path to fetch the JSON file
+                const response = await fetch('./api_urls.json');
+                if (response.ok) {
+                    apiUrls = await response.json();
+                } else {
+                    console.error('Error fetching API URLs:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error fetching API URLs:', error);
+            }
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            // Serialize form data to JSON
+            const formData = new FormData(e.target);
+            const data = {};
+            formData.forEach((value, key) => {
+                if (data[key]) {
+                    if (!Array.isArray(data[key])) {
+                        data[key] = [data[key]];
+                    }
+                    data[key].push(value);
+                } else {
+                    data[key] = value;
+                }
+            });
+
+            // Post to API
+            try {
+                const response = await fetch(apiUrls["order-request"], {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                const responseData = await response.json();
+
+                if (response.ok) {
+                    handleFormSubmissionResponse(responseData);
+                    document.getElementById('otpModal').classList.remove('hidden');
+                } else {
+                    console.error('Error submitting form:', responseData.message || "Unknown error");
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        }
+
+        let currentOrderId;
+
+        async function verifyOTP() {
+            // Get OTP from input
+            const otp = document.getElementById('otpInput').value;
+            const phone = document.querySelector('#phone').value;
+
+            try {
+                const response = await fetch(apiUrls["otp-verification"], {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, otp, order_id: currentOrderId }), // Include the order_id in the request body
+                });
+
+                const responseData = await response.json();
+
+                if (response.ok) {
+                    // Hide OTP modal
+                    document.getElementById('otpModal').classList.add('hidden');
+
+                    // Show success message inside the modal
+                    document.getElementById('successMessage').classList.remove('hidden');
+
+                    // Display the GIF banner
+                    document.getElementById('confirmationGif').classList.remove('hidden');
+
+                } else {
+                    // Display a default message if the response doesn't have a specific error message
+                    let errorMessage = responseData.message || "An error occurred while verifying OTP.";
+                    if (errorMessage.includes("Incorrect OTP")) {
+                        document.getElementById('otpErrorMessage').classList.remove('hidden');
+                    } else {
+                        console.error('Error verifying OTP:', errorMessage);
+                    }
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        }
+
+        // When the form is submitted and you receive the response from your Lambda function:
+        function handleFormSubmissionResponse(response) {
+            if (response.order_id) {
+                currentOrderId = response.order_id; // Store the order_id for later use
+            }
+            // Handle other aspects of the form submission response...
+        }
+
+
+        function closeGifBanner() {
+            document.getElementById('confirmationGif').classList.add('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('otpModal').classList.add('hidden');
+        }
+
+        // Fetch the URLs when the document is loaded
+        document.addEventListener('DOMContentLoaded', fetchApiUrls);
+    </script>
+
+</body>
+
+</html>
